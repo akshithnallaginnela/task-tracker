@@ -5,8 +5,19 @@
     "client-install": "cd client && npm install",
     "build": "cd client && npm run build"
   },
-  "keywords": [],
-  "author": "",
+  "description": "A full-stack MERN task manager with real-time audio alarms and a modern UI.",
+  "keywords": [
+    "mern-stack",
+    "react",
+    "nodejs",
+    "express",
+    "mongodb",
+    "task-tracker",
+    "productivity",
+    "alarm-system",
+    "tailwindcss"
+  ],
+  "author": "Akshith Nallaginnela",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
