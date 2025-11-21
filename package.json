@@ -1,15 +1,3 @@
-{
-  "name": "task-tracker-mern",
-  "version": "1.0.0",
-  "scripts": {
-    "client-install": "cd client && npm install",
-    "build": "cd client && npm run build"
-  },
-  "description": "A full-stack MERN task manager with real-time audio alarms and a modern UI.",
-  "keywords": [
-    "mern-stack",
-    "react",
-    "nodejs",
     "express",
     "mongodb",
     "task-tracker",
