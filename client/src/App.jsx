@@ -1,50 +1,108 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import TaskForm from './components/TaskForm';
-import TaskList from './components/TaskList';
-import Alarm from './components/Alarm';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './components/Login';
+import Signup from './components/Signup';
+import Dashboard from './components/Dashboard';
+import Projects from './components/Projects';
+import Learning from './components/Learning';
+import Analytics from './components/Analytics';
+import AccountSettings from './components/AccountSettings';
+import Layout from './components/Layout';
 
 function App() {
-  const [tasks, setTasks] = useState([]);
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-  const fetchTasks = async () => {
-    try {
-      const response = await axios.get(`${apiUrl}/tasks`);
-      setTasks(response.data);
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
-    }
-  };
+  const [currentUser, setCurrentUser] = useState(null);
+  const [showSignup, setShowSignup] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
-    fetchTasks();
+    const user = localStorage.getItem('currentUser');
+    if (user) {
+      setCurrentUser(JSON.parse(user));
+    }
   }, []);
 
-  return (
-    <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <header className="mb-10 text-center">
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-            Task Tracker <span className="text-blue-600">Pro</span>
-          </h1>
-          <p className="mt-2 text-lg text-gray-600">Manage your tasks and never miss a deadline.</p>
-        </header>
+  const handleLogin = (user) => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentUser(user);
+      setIsTransitioning(false);
+    }, 300);
+  };
 
-        <Alarm tasks={tasks} />
+  const handleSignup = (user) => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentUser(user);
+      setIsTransitioning(false);
+    }, 300);
+  };
 
-        <TaskForm onTaskAdded={fetchTasks} />
+  const handleLogout = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('token');
+      setCurrentUser(null);
+      setIsTransitioning(false);
+    }, 300);
+  };
 
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Your Tasks</h2>
-          <TaskList
-            tasks={tasks}
-            onTaskUpdated={fetchTasks}
-            onTaskDeleted={fetchTasks}
-          />
-        </div>
+  const handleSwitchToSignup = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setShowSignup(true);
+      setIsTransitioning(false);
+    }, 200);
+  };
+
+  const handleSwitchToLogin = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setShowSignup(false);
+      setIsTransitioning(false);
+    }, 200);
+  };
+
+  if (isTransitioning) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600"></div>
       </div>
-    </div>
+    );
+  }
+
+  if (!currentUser) {
+    if (showSignup) {
+      return (
+        <Signup
+          onSignup={handleSignup}
+          onSwitchToLogin={handleSwitchToLogin}
+        />
+      );
+    }
+
+    return (
+      <Login
+        onLogin={handleLogin}
+        onSwitchToSignup={handleSwitchToSignup}
+      />
+    );
+  }
+
+  return (
+    <Router>
+      <Routes>
+        <Route element={<Layout user={currentUser} onLogout={handleLogout} />}>
+          <Route path="/" element={<Dashboard user={currentUser} />} />
+          <Route path="/dashboard" element={<Dashboard user={currentUser} />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/learning" element={<Learning />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/settings" element={<AccountSettings />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </Router>
   );
 }
 

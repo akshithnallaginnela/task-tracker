@@ -16,6 +16,20 @@ const TaskSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  userId: {
+    type: String,
+    required: false,
+  },
+  category: {
+    type: String,
+    enum: ['Projects', 'Learning', 'Practice', 'Other'],
+    default: 'Other',
+  },
+  priority: {
+    type: String,
+    enum: ['low', 'medium', 'high'],
+    default: 'medium',
+  },
   createdAt: {
     type: Date,
     default: Date.now,
