@@ -2,8 +2,12 @@
   "name": "task-tracker-mern",
   "version": "1.0.0",
   "scripts": {
+    "start": "node api/index.js",
+    "client": "cd client && npm run dev",
     "client-install": "cd client && npm install",
-    "build": "cd client && npm install && npm run build"
+    "build": "cd client && npm install && npm run build",
+    "vercel-build": "cd api && npm install && cd ../client && npm install && npm run build",
+    "deploy": "vercel --prod"
   },
   "description": "A full-stack MERN task manager with real-time audio alarms and a modern UI.",
   "keywords": [
@@ -20,9 +24,13 @@
   "author": "Akshith Nallaginnela",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "mongoose": "^8.20.1"
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.20.1",
+    "pg": "^8.18.0",
+    "sequelize": "^6.37.7"
   }
 }

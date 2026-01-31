@@ -1,28 +1,28 @@
 import React from 'react';
-import axios from 'axios';
+import { tasksAPI } from '../services/api';
 import { format } from 'date-fns';
 
 const TaskList = ({ tasks, onTaskUpdated, onTaskDeleted }) => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
     const handleToggleComplete = async (task) => {
         try {
-            await axios.put(`${apiUrl}/tasks/${task._id}`, {
+            await tasksAPI.update(task._id, {
                 isCompleted: !task.isCompleted
             });
             onTaskUpdated();
         } catch (error) {
             console.error('Error updating task:', error);
+            alert('Failed to update task. Please check your connection.');
         }
     };
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this task?')) return;
         try {
-            await axios.delete(`${apiUrl}/tasks/${id}`);
+            await tasksAPI.delete(id);
             onTaskDeleted();
         } catch (error) {
             console.error('Error deleting task:', error);
+            alert('Failed to delete task. Please check your connection.');
         }
     };
 
