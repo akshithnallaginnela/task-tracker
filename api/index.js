@@ -54,6 +54,7 @@ app.use('/api/auth', authRoutes);
 
 // OTP routes (public)
 app.use('/api/otp', otpRoutes);
+console.log('✅ Routes registered: /api/auth, /api/otp, /api/tasks');
 
 // Get all tasks for a specific user
 app.get('/api/tasks', authMiddleware, async (req, res) => {
