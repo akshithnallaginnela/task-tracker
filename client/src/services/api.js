@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // API URL configuration for split deployment (Vercel frontend + Render backend)
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD
-  ? 'https://task-tracker-qrv3.onrender.com/api'  // Production: Render backend
+  ? 'https://task-tracker-qnv3.onrender.com/api'  // Production: Render backend
   : 'http://localhost:5000/api'); // Development: local server
 
 // Create axios instance with base configuration
