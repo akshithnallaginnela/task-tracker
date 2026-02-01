@@ -14,7 +14,21 @@ const { sendTaskNotification } = require('./services/emailService');
 
 const app = express();
 
-app.use(cors());
+// CORS configuration - Allow Vercel frontend to access Render backend
+const corsOptions = {
+    origin: [
+        'https://task-tracker-lake-xi.vercel.app',  // Your Vercel deployment
+        'http://localhost:5173',                     // Local development
+        'http://localhost:3000'                      // Alternative local port
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Length', 'X-Request-Id'],
+    maxAge: 86400 // 24 hours
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Log ALL incoming requests
