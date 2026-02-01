@@ -12,7 +12,7 @@ function AccountSettings() {
     confirmPassword: ''
   });
   const [message, setMessage] = useState({ type: '', text: '' });
-  const { theme, setTheme } = useTheme();
+  const { themeMode, changeTheme } = useTheme();
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
     taskReminders: true,
@@ -42,23 +42,23 @@ function AccountSettings() {
 
   const handleProfileUpdate = (e) => {
     e.preventDefault();
-    
+
     const users = JSON.parse(localStorage.getItem('users')) || [];
-    const updatedUsers = users.map(user => 
-      user.email === currentUser.email 
+    const updatedUsers = users.map(user =>
+      user.email === currentUser.email
         ? { ...user, name: formData.name, email: formData.email }
         : user
     );
 
     localStorage.setItem('users', JSON.stringify(updatedUsers));
-    
+
     const updatedUser = { ...currentUser, name: formData.name, email: formData.email };
     localStorage.setItem('currentUser', JSON.stringify(updatedUser));
     setCurrentUser(updatedUser);
-    
+
     setMessage({ type: 'success', text: 'Profile updated successfully!' });
     setIsEditing(false);
-    
+
     setTimeout(() => setMessage({ type: '', text: '' }), 3000);
   };
 
@@ -81,10 +81,10 @@ function AccountSettings() {
     if (userIndex !== -1 && users[userIndex].password === formData.currentPassword) {
       users[userIndex].password = formData.newPassword;
       localStorage.setItem('users', JSON.stringify(users));
-      
+
       setMessage({ type: 'success', text: 'Password changed successfully!' });
       setFormData({ ...formData, currentPassword: '', newPassword: '', confirmPassword: '' });
-      
+
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     } else {
       setMessage({ type: 'error', text: 'Current password is incorrect!' });
@@ -92,11 +92,12 @@ function AccountSettings() {
   };
 
   const handleThemeChange = (newTheme) => {
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    setMessage({ type: 'success', text: `Theme changed to ${newTheme}!` });
+    changeTheme(newTheme);
+    const themeName = newTheme === 'system' ? 'System Preference' : newTheme.charAt(0).toUpperCase() + newTheme.slice(1);
+    setMessage({ type: 'success', text: `Theme changed to ${themeName}!` });
     setTimeout(() => setMessage({ type: '', text: '' }), 2000);
   };
+
   const handleNotificationChange = (key) => {
     const updated = { ...notifications, [key]: !notifications[key] };
     setNotifications(updated);
@@ -107,10 +108,10 @@ function AccountSettings() {
     if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
       const users = JSON.parse(localStorage.getItem('users')) || [];
       const filteredUsers = users.filter(user => user.email !== currentUser.email);
-      
+
       localStorage.setItem('users', JSON.stringify(filteredUsers));
       localStorage.removeItem('currentUser');
-      
+
       window.location.reload();
     }
   };
@@ -134,11 +135,10 @@ function AccountSettings() {
 
         {/* Message Alert */}
         {message.text && (
-          <div className={`mb-6 p-4 rounded-lg border ${
-            message.type === 'success' 
-              ? 'bg-green-50 border-green-200 text-green-800' 
-              : 'bg-red-50 border-red-200 text-red-800'
-          }`}>
+          <div className={`mb-6 p-4 rounded-lg border ${message.type === 'success'
+            ? 'bg-green-50 border-green-200 text-green-800'
+            : 'bg-red-50 border-red-200 text-red-800'
+            }`}>
             <div className="flex items-center gap-2">
               {message.type === 'success' ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -294,11 +294,10 @@ function AccountSettings() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button
               onClick={() => handleThemeChange('light')}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                theme === 'light'
+              className={`p-4 rounded-lg border-2 transition-all ${themeMode === 'light'
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-300'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2 mb-2">
                 <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -311,11 +310,10 @@ function AccountSettings() {
 
             <button
               onClick={() => handleThemeChange('dark')}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                theme === 'dark'
+              className={`p-4 rounded-lg border-2 transition-all ${themeMode === 'dark'
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-300'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2 mb-2">
                 <svg className="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -327,20 +325,19 @@ function AccountSettings() {
             </button>
 
             <button
-              onClick={() => handleThemeChange('auto')}
-              className={`p-4 rounded-lg border-2 transition-all ${
-                theme === 'auto'
+              onClick={() => handleThemeChange('system')}
+              className={`p-4 rounded-lg border-2 transition-all ${themeMode === 'system'
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-300'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2 mb-2">
                 <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                <span className="font-semibold">Auto</span>
+                <span className="font-semibold">System</span>
               </div>
-              <p className="text-sm text-gray-600">System preference</p>
+              <p className="text-sm text-gray-600">Follow OS theme</p>
             </button>
           </div>
         </div>
@@ -361,14 +358,12 @@ function AccountSettings() {
               </div>
               <button
                 onClick={() => handleNotificationChange('emailNotifications')}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  notifications.emailNotifications ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notifications.emailNotifications ? 'bg-blue-600' : 'bg-gray-300'
+                  }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    notifications.emailNotifications ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notifications.emailNotifications ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                 />
               </button>
             </div>
@@ -380,14 +375,12 @@ function AccountSettings() {
               </div>
               <button
                 onClick={() => handleNotificationChange('taskReminders')}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  notifications.taskReminders ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notifications.taskReminders ? 'bg-blue-600' : 'bg-gray-300'
+                  }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    notifications.taskReminders ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notifications.taskReminders ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                 />
               </button>
             </div>
@@ -399,14 +392,12 @@ function AccountSettings() {
               </div>
               <button
                 onClick={() => handleNotificationChange('weeklyReport')}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  notifications.weeklyReport ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notifications.weeklyReport ? 'bg-blue-600' : 'bg-gray-300'
+                  }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    notifications.weeklyReport ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notifications.weeklyReport ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                 />
               </button>
             </div>

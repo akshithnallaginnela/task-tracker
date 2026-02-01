@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { tasksAPI } from '../services/api';
 import { format } from 'date-fns';
 
 function Projects() {
@@ -14,7 +14,6 @@ function Projects() {
   });
 
   const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     fetchProjects();
@@ -23,7 +22,7 @@ function Projects() {
   const fetchProjects = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/tasks`);
+      const response = await tasksAPI.getAll();
       const projectTasks = response.data.filter(task => 
         task.category === 'Projects' || task.title.toLowerCase().includes('project')
       );
@@ -43,7 +42,7 @@ function Projects() {
         category: 'Projects',
         userId: currentUser?.email
       };
-      await axios.post(`${API_URL}/tasks`, projectData);
+      await tasksAPI.create(projectData);
       setShowModal(false);
       setFormData({ title: '', description: '', dueDate: '', priority: 'medium' });
       fetchProjects();
@@ -55,7 +54,7 @@ function Projects() {
   const deleteProject = async (id) => {
     if (window.confirm('Are you sure you want to delete this project?')) {
       try {
-        await axios.delete(`${API_URL}/tasks/${id}`);
+        await tasksAPI.delete(id);
         fetchProjects();
       } catch (error) {
         console.error('Error deleting project:', error);
@@ -65,7 +64,7 @@ function Projects() {
 
   const toggleComplete = async (project) => {
     try {
-      await axios.put(`${API_URL}/tasks/${project._id}`, {
+      await tasksAPI.update(project._id, {
         ...project,
         isCompleted: !project.isCompleted
       });

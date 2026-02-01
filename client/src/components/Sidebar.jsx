@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 function Sidebar({ user, onLogout }) {
   const location = useLocation();
-  
+
   const isActive = (path) => {
     if (path === '/dashboard') {
       return location.pathname === '/dashboard' || location.pathname === '/';
@@ -60,13 +60,13 @@ function Sidebar({ user, onLogout }) {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-gray-900 text-white p-6 z-10 overflow-y-auto">
+    <aside className="fixed left-0 top-0 h-full w-64 bg-gradient-to-b from-gray-900 via-slate-900 to-gray-900 text-white p-6 z-10 overflow-y-auto shadow-2xl border-r border-white/10">
       {/* Logo */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-          SkillTracker
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          Task Tracker
         </h1>
-        <p className="text-gray-400 text-sm mt-1">Student Hub</p>
+        <p className="text-gray-400 text-sm mt-1">Student Productivity</p>
       </div>
 
       {/* Navigation */}
@@ -75,11 +75,10 @@ function Sidebar({ user, onLogout }) {
           <Link
             key={item.path}
             to={item.path}
-            className={`flex items-center space-x-3 rounded-lg px-4 py-3 transition-all duration-200 ${
-              isActive(item.path)
-                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
-                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-            }`}
+            className={`flex items-center space-x-3 rounded-xl px-4 py-3 transition-all duration-200 ${isActive(item.path)
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-purple-500/30'
+                : 'text-gray-400 hover:bg-white/5 hover:text-white'
+              }`}
           >
             {item.icon}
             <span className="font-medium">{item.label}</span>
@@ -89,9 +88,9 @@ function Sidebar({ user, onLogout }) {
 
       {/* User Profile & Logout */}
       <div className="absolute bottom-6 left-6 right-6">
-        <div className="bg-gray-800 rounded-lg p-4 shadow-lg">
+        <div className="glass bg-white/5 rounded-xl p-4 shadow-2xl border border-white/10">
           <div className="flex items-center space-x-3 mb-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-lg font-bold shadow-md">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-lg font-bold shadow-lg">
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div className="flex-1 min-w-0">
@@ -101,7 +100,7 @@ function Sidebar({ user, onLogout }) {
           </div>
           <button
             onClick={onLogout}
-            className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg"
+            className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105"
           >
             Logout
           </button>
