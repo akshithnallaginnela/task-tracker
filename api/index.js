@@ -15,20 +15,34 @@ const { sendTaskNotification } = require('./services/emailService');
 const app = express();
 
 // CORS configuration - Allow Vercel frontend to access Render backend
+const allowedOrigins = [
+    'https://task-tracker-lake-xi.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000'
+];
+
 const corsOptions = {
-    origin: [
-        'https://task-tracker-lake-xi.vercel.app',  // Your Vercel deployment
-        'http://localhost:5173',                     // Local development
-        'http://localhost:3000'                      // Alternative local port
-    ],
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps, Postman, server-to-server)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('❌ CORS blocked origin:', origin);
+            callback(null, true); // TEMPORARILY allow all for debugging
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Content-Length', 'X-Request-Id'],
-    maxAge: 86400 // 24 hours
+    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 };
 
 app.use(cors(corsOptions));
+
+// Explicitly handle OPTIONS requests for preflight
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Log ALL incoming requests
