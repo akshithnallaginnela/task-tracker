@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.PROD 
+const API_URL = import.meta.env.PROD
   ? '/api'  // Production: use relative path (Vercel rewrites handle it)
   : 'http://localhost:5000/api'; // Development: use local server
 
@@ -39,6 +39,13 @@ export const tasksAPI = {
   create: (taskData) => api.post('/tasks', taskData),
   update: (id, taskData) => api.put(`/tasks/${id}`, taskData),
   delete: (id) => api.delete(`/tasks/${id}`)
+};
+
+// OTP API
+export const otpAPI = {
+  send: (email, purpose) => api.post('/otp/send', { email, purpose }),
+  verify: (email, otp, purpose) => api.post('/otp/verify', { email, otp, purpose }),
+  resetPassword: (email, otp, newPassword) => api.post('/otp/reset-password', { email, otp, newPassword })
 };
 
 export default api;

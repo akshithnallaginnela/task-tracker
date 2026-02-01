@@ -1,20 +1,26 @@
+// Load environment variables FIRST
+require('dotenv').config();
+
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
-require('dotenv').config();
+const { syncLocalUser, localUsers } = require('../services/userService');
+const { sendTaskNotification } = require('../services/emailService');
 
 // Check if PostgreSQL is available
 const isPostgresAvailable = !!User;
 
-// In-memory user store for local development (when PostgreSQL is not available)
-const localUsers = new Map();
+// Note: localUsers is now imported from userService for cross-module access
 
 // @route   POST /api/auth/signup
 // @desc    Register new user
 // @access  Public
 router.post('/signup', async (req, res) => {
+  console.log('🔵 === SIGNUP REQUEST RECEIVED ===');
+  console.log('Body:', req.body);
+
   try {
     const { name, email, password } = req.body;
 
@@ -29,9 +35,12 @@ router.post('/signup', async (req, res) => {
 
     // LOCAL MODE: Use in-memory storage
     if (!isPostgresAvailable) {
+      console.log('🟡 LOCAL MODE: Checking for existing user...');
+
       // Check if user already exists
       const existingUser = Array.from(localUsers.values()).find(u => u.email === email);
       if (existingUser) {
+        console.log('❌ User already exists:', email);
         return res.status(400).json({ message: 'User with this email already exists' });
       }
 
@@ -43,6 +52,7 @@ router.post('/signup', async (req, res) => {
       const userId = `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
       // Store user
+      console.log('🟢 Creating new user:', email);
       const newUser = {
         id: userId,
         name,
@@ -50,13 +60,34 @@ router.post('/signup', async (req, res) => {
         password: hashedPassword
       };
       localUsers.set(userId, newUser);
+      syncLocalUser(userId, newUser); // Sync to userService
+      console.log('✅ User stored in memory');
+      console.log('Total users in memory:', localUsers.size);
 
       // Generate JWT token
       const token = jwt.sign(
-        { userId: newUser.id, email: newUser.email },
+        { userId: newUser.id, email: newUser.email, name: newUser.name },
         process.env.JWT_SECRET || 'your_jwt_secret_key',
         { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
       );
+
+      // Send welcome email
+      console.log(`📧 Attempting to send welcome email to: ${email}`);
+      try {
+        const welcomeTask = {
+          title: 'Welcome to Student Task Tracker!',
+          description: `Hi ${name}, welcome aboard! Start organizing your tasks effectively.`,
+          dueDate: new Date(),
+          category: 'Welcome',
+          priority: 'high'
+        };
+        await sendTaskNotification(email, welcomeTask, 'created');
+        console.log(`✅ Welcome email sent to ${email}`);
+      } catch (emailError) {
+        console.error('❌ Failed to send welcome email:', emailError.message);
+        console.error('Full error:', emailError);
+        // Don't fail registration if email fails
+      }
 
       return res.status(201).json({
         message: 'User created successfully (LOCAL MODE)',
@@ -190,7 +221,7 @@ router.post('/login', async (req, res) => {
 router.get('/me', async (req, res) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
-    
+
     if (!token) {
       return res.status(401).json({ message: 'No token provided' });
     }

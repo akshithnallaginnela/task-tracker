@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { authAPI } from '../services/api';
 
-const Login = ({ onLogin, onSwitchToSignup }) => {
+const Login = ({ onLogin, onSwitchToSignup, onSwitchToForgotPassword }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -16,11 +16,11 @@ const Login = ({ onLogin, onSwitchToSignup }) => {
     try {
       const response = await authAPI.login({ email, password });
       const { token, user } = response.data;
-      
+
       // Store token and user data
       localStorage.setItem('token', token);
       localStorage.setItem('currentUser', JSON.stringify(user));
-      
+
       onLogin(user);
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
@@ -90,6 +90,16 @@ const Login = ({ onLogin, onSwitchToSignup }) => {
                   )}
                 </button>
               </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={onSwitchToForgotPassword}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Forgot Password?
+              </button>
             </div>
 
             <button

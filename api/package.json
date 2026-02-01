@@ -8,18 +8,27 @@
     "dev": "nodemon index.js",
     "setup": "node setup-db.js"
   },
-  "keywords": ["task", "tracker", "api", "express", "postgresql", "mongodb"],
+  "keywords": [
+    "task",
+    "tracker",
+    "api",
+    "express",
+    "postgresql",
+    "mongodb"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^5.1.0",
-    "mongoose": "^8.20.1",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.20.1",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.13",
     "pg": "^8.13.1",
-    "sequelize": "^6.37.5",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2"
+    "sequelize": "^6.37.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import ForgotPassword from './components/ForgotPassword';
 import Dashboard from './components/Dashboard';
 import Projects from './components/Projects';
 import Learning from './components/Learning';
@@ -12,6 +13,7 @@ import Layout from './components/Layout';
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [showSignup, setShowSignup] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
@@ -59,6 +61,15 @@ function App() {
     setIsTransitioning(true);
     setTimeout(() => {
       setShowSignup(false);
+      setShowForgotPassword(false);
+      setIsTransitioning(false);
+    }, 200);
+  };
+
+  const handleSwitchToForgotPassword = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setShowForgotPassword(true);
       setIsTransitioning(false);
     }, 200);
   };
@@ -72,6 +83,15 @@ function App() {
   }
 
   if (!currentUser) {
+    if (showForgotPassword) {
+      return (
+        <ForgotPassword
+          onBack={handleSwitchToLogin}
+          onSuccess={handleSwitchToLogin}
+        />
+      );
+    }
+
     if (showSignup) {
       return (
         <Signup
@@ -85,6 +105,7 @@ function App() {
       <Login
         onLogin={handleLogin}
         onSwitchToSignup={handleSwitchToSignup}
+        onSwitchToForgotPassword={handleSwitchToForgotPassword}
       />
     );
   }
