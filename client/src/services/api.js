@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// API URL configuration for split deployment (Vercel frontend + Render backend)
+// API URL - relative path works for both local dev and Vercel full-stack deployment
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD
-  ? 'https://task-tracker-qnv3.onrender.com/api'  // Production: Render backend
+  ? '/api'  // Production: Same domain on Vercel
   : 'http://localhost:5000/api'); // Development: local server
 
 // Create axios instance with base configuration
