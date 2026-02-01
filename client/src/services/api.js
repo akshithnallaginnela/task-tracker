@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.PROD
-  ? '/api'  // Production: use relative path (Vercel rewrites handle it)
-  : 'http://localhost:5000/api'; // Development: use local server
+// API URL configuration for split deployment (Vercel frontend + Render backend)
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD
+  ? 'https://task-tracker-qrv3.onrender.com/api'  // Production: Render backend
+  : 'http://localhost:5000/api'); // Development: local server
 
 // Create axios instance with base configuration
 const api = axios.create({
