@@ -1,238 +1,305 @@
-# 🔧 Fix 404 NOT_FOUND Error on Vercel
+# 🔧 Fix Vercel 404 - Dashboard Settings
 
-## ✅ Issue Fixed
+## ✅ Code is Already on Main Branch
 
-I've updated your `vercel.json` configuration and pushed it to GitHub. Vercel will automatically redeploy with the correct settings.
-
----
-
-## 🎯 What Was Wrong?
-
-The original `vercel.json` was configured for CLI deployment, not GitHub imports. The routing wasn't set up correctly for serving the frontend.
-
-**Old Configuration:**
-
-- Missing build command
-- Incorrect routing for frontend files
-- Used "rewrites" instead of "routes"
-
-**New Configuration:**
-
-- ✅ Explicit build command
-- ✅ Correct output directory
-- ✅ Proper routing for both API and frontend
+Your updated `vercel.json` is now on the `main` branch in GitHub. Vercel should automatically redeploy, but if you're still seeing 404 errors, we need to check and update the Vercel project settings.
 
 ---
 
-## 🚀 Next Steps
+## 🎯 Fix in Vercel Dashboard
 
-### **1. Wait for Automatic Redeployment**
+### **Step 1: Go to Project Settings**
 
-Vercel will detect the push and automatically redeploy. This should take 2-3 minutes.
+1. Open <https://vercel.com/dashboard>
+2. Click your **task-tracker** project
+3. Click **"Settings"** tab
 
-Go to: <https://vercel.com/dashboard>
+### **Step 2: Configure Build Settings**
 
-- You'll see a new deployment in progress
-- Wait for it to complete
+Click **"General"** in the left sidebar, then scroll to **"Build & Development Settings"**:
 
-### **2. Add Environment Variables** (CRITICAL!)
-
-After redeployment, your app still won't work without environment variables!
-
-**Go to:** <https://vercel.com/dashboard>
-
-1. Click your **task-tracker** project
-2. Click **Settings** tab
-3. Click **Environment Variables** (left sidebar)
-4. Add these 5 variables:
-
-#### **Variable 1: DATABASE_URL**
+#### **Framework Preset:**
 
 ```
-Name: DATABASE_URL
-Value: postgresql://neondb_owner:npg_9ZOwe0gbxcJW@ep-lucky-sound-ahyqeost-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require
-Environments: ☑ Production ☑ Preview ☑ Development
+Other
 ```
 
-#### **Variable 2: MONGODB_URI**
+(NOT Vite - this is important!)
+
+#### **Build Command:**
+
+Override and set to:
 
 ```
-Name: MONGODB_URI  
-Value: mongodb+srv://akshithuser:task-tracker@cluster0.yuyejz8.mongodb.net/?appName=Cluster0
-Environments: ☑ Production ☑ Preview ☑ Development
+npm run vercel-build
 ```
 
-#### **Variable 3: JWT_SECRET**
+#### **Output Directory:**
+
+Override and set to:
 
 ```
-Name: JWT_SECRET
-Value: edf90e8d79bfc0cb25488fe41c89c419ea2d0e502bbcc7eb8f831facf2c7cb96
-Environments: ☑ Production ☑ Preview ☑ Development
+client/dist
 ```
 
-#### **Variable 4: EMAIL_USER**
+#### **Install Command:**
+
+Keep default:
 
 ```
-Name: EMAIL_USER
-Value: student.task.tracker.v1@gmail.com
-Environments: ☑ Production ☑ Preview ☑ Development
+npm install
 ```
 
-#### **Variable 5: EMAIL_PASS**
+#### **Root Directory:**
+
+Keep as:
 
 ```
-Name: EMAIL_PASS
-Value: lshpjcndwagmpclf
-Environments: ☑ Production ☑ Preview ☑ Development
+./
 ```
 
-### **3. Trigger Redeployment**
+### **Step 3: Save Changes**
 
-After adding environment variables:
-
-**Option A: Automatic**
-
-- Vercel might auto-redeploy after adding env variables
-
-**Option B: Manual**
-
-- Go to **Deployments** tab
-- Click the 3 dots (...) on latest deployment
-- Click **Redeploy**
-- Select **"Use existing Build Cache"** NO
-- Click **Redeploy**
+Click **"Save"** at the bottom of the Build & Development Settings section.
 
 ---
 
-## 🧪 Test Your App
+## 🔄 Step 4: Trigger Redeploy
 
-After redeployment with environment variables:
+After saving settings:
 
-1. **Visit your Vercel URL** (something like `https://task-tracker-xyz.vercel.app`)
-
-2. **Test Signup:**
-   - Click "Sign Up"
-   - Enter name, email, password
-   - Click "Send Verification Code"
-   - Check email for OTP
-   - Enter OTP and verify
-   - ✅ Should create account successfully!
-
-3. **Test Login:**
-   - Login with your created account
-   - ✅ Should work!
-
-4. **Test Tasks:**
-   - Create a task
-   - Mark it complete
-   - ✅ Should save to MongoDB!
+1. Go to **"Deployments"** tab
+2. Find the latest deployment
+3. Click the **three dots (...)** menu
+4. Click **"Redeploy"**
+5. **IMPORTANT:** Uncheck "Use existing Build Cache"
+6. Click **"Redeploy"** to confirm
 
 ---
 
-## 📊 Verify Databases
+## ⚙️ Step 5: Add Environment Variables (CRITICAL!)
 
-### **Check Neon (Users):**
+While the deployment is running, add environment variables:
 
-1. <https://console.neon.tech>
-2. Your project → SQL Editor
-3. Run: `SELECT * FROM users;`
-4. ✅ Should see production users!
+1. Click **"Settings"** tab
+2. Click **"Environment Variables"** (left sidebar)
+3. Add these 5 variables:
 
-### **Check MongoDB (Tasks):**
+### **Add Each Variable:**
 
-1. <https://cloud.mongodb.com>
-2. Your cluster → Collections
-3. ✅ Should see production tasks!
+Click "Add New" for each:
 
----
+#### **1. DATABASE_URL**
 
-## 🔍 Troubleshooting
+- **Name:** `DATABASE_URL`
+- **Value:**
 
-### **If you still see 404:**
+  ```
+  postgresql://neondb_owner:npg_9ZOwe0gbxcJW@ep-lucky-sound-ahyqeost-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require
+  ```
 
-1. **Check deployment status:**
-   - Go to Vercel dashboard
-   - Look for latest deployment
-   - Should say "Ready" not "Error"
+- **Environments:** ☑ Production ☑ Preview ☑ Development
 
-2. **Check build logs:**
-   - Click on deployment
-   - Check "Build Logs"
-   - Look for errors
+#### **2. MONGODB_URI**
 
-3. **Verify files deployed:**
-   - In deployment details, check "Source Files"
-   - Should see `client/`, `api/`, `vercel.json`
+- **Name:** `MONGODB_URI`
+- **Value:**
 
-### **If API routes return 404:**
+  ```
+  mongodb+srv://akshithuser:task-tracker@cluster0.yuyejz8.mongodb.net/?appName=Cluster0
+  ```
 
-1. Check environment variables are added
-2. Check Neon database is active
-3. View Function Logs for errors
+- **Environments:** ☑ Production ☑ Preview ☑ Development
 
-### **If frontend loads but features don't work:**
+#### **3. JWT_SECRET**
 
-1. **Missing environment variables** - Add all 5 variables
-2. **Database not connected** - Check Neon/MongoDB credentials
-3. **Check browser console** - Look for API errors
+- **Name:** `JWT_SECRET`
+- **Value:**
 
----
+  ```
+  edf90e8d79bfc0cb25488fe41c89c419ea2d0e502bbcc7eb8f831facf2c7cb96
+  ```
 
-## ✅ Success Checklist
+- **Environments:** ☑ Production ☑ Preview ☑ Development
 
-After everything is set up:
+#### **4. EMAIL_USER**
 
-- [ ] Deployment shows "Ready" status
-- [ ] Homepage loads without 404
-- [ ] Can sign up with OTP
-- [ ] Receive OTP emails
-- [ ] Can login
-- [ ] Can create tasks
-- [ ] Data saves to databases
-- [ ] No errors in Vercel logs
+- **Name:** `EMAIL_USER`
+- **Value:**
 
----
+  ```
+  student.task.tracker.v1@gmail.com
+  ```
 
-## 🎯 Current Status
+- **Environments:** ☑ Production ☑ Preview ☑ Development
 
-**What's been fixed:**
+#### **5. EMAIL_PASS**
 
-- ✅ Updated `vercel.json` with correct configuration
-- ✅ Pushed fix to GitHub
-- ✅ Vercel will auto-redeploy
+- **Name:** `EMAIL_PASS`
+- **Value:**
 
-**What you need to do:**
+  ```
+  lshpjcndwagmpclf
+  ```
 
-- ⏳ Wait for redeployment (2-3 min)
-- ⚠️ Add environment variables (5 variables)
-- ⏳ Wait for final deployment
-- ✅ Test your app!
+- **Environments:** ☑ Production ☑ Preview ☑ Development
 
 ---
 
-## 📝 Quick Commands
+## 🔄 Step 6: Final Redeploy
 
-### **View Deployment Status:**
+After adding all environment variables:
 
-Visit: <https://vercel.com/dashboard> → Your Project
+1. Go back to **"Deployments"** tab
+2. Click **three dots (...)** on latest deployment
+3. Click **"Redeploy"**
+4. Uncheck "Use existing Build Cache"
+5. Click **"Redeploy"**
 
-### **View Logs:**
+This will deploy with:
 
-```bash
-npx vercel logs
+- ✅ Correct build settings
+- ✅ Updated vercel.json from GitHub
+- ✅ All environment variables
+
+---
+
+## ✅ Step 7: Verify Deployment
+
+### **Check Build Logs:**
+
+1. Click on the running deployment
+2. Click **"Building"** to see build logs
+3. Look for:
+
+   ```
+   ✓ Client build successful
+   ✓ API functions ready
+   ```
+
+### **Check Deployment Status:**
+
+Wait for deployment to show:
+
+```
+✅ Ready
 ```
 
-### **Force Redeploy:**
+### **Test Your App:**
 
-Go to Deployments → Click (...) → Redeploy
+1. Click **"Visit"** or go to your deployment URL
+2. You should see your app homepage!
+3. Try signing up with OTP
+4. Check if emails are sent
 
 ---
 
-**Next:** Wait for the automatic redeployment, then add environment variables! 🚀
+## 🐛 Troubleshooting
 
-**Questions?** Check the deployment status in Vercel dashboard or ask me!
+### **Still seeing 404?**
+
+**Check Framework Preset:**
+
+- Settings → General → Build & Development Settings
+- Must be "Other" NOT "Vite"
+
+**Check Build Command:**
+
+- Must be: `npm run vercel-build`
+- NOT: `cd client && npm run build`
+
+**Check Output Directory:**
+
+- Must be: `client/dist`
+- NOT: `dist` or `.next` or anything else
+
+### **Build fails?**
+
+**Check build logs** for errors:
+
+- Missing dependencies?
+- Environment variables missing?
+- Build command incorrect?
+
+### **API returns errors?**
+
+**Check Function Logs:**
+
+- Settings → Functions → View logs
+- Look for database connection errors
+- Verify environment variables are set
+
+### **No errors but app doesn't work?**
+
+**Check browser console:**
+
+- Press F12
+- Go to Console tab
+- Look for network errors or API call failures
+
+---
+
+## 📋 Complete Settings Checklist
+
+Before redeploying, verify:
+
+**General Settings:**
+
+- [ ] Framework Preset: Other
+- [ ] Build Command: `npm run vercel-build`
+- [ ] Output Directory: `client/dist`
+- [ ] Install Command: `npm install`  
+- [ ] Root Directory: `./`
+
+**Environment Variables:**
+
+- [ ] DATABASE_URL (Neon PostgreSQL)
+- [ ] MONGODB_URI (MongoDB Atlas)
+- [ ] JWT_SECRET (Authentication)
+- [ ] EMAIL_USER (Gmail address)
+- [ ] EMAIL_PASS (Gmail app password)
+- [ ] All set for: Production, Preview, Development
+
+**Deployment:**
+
+- [ ] Code is on main branch (✅ Already done!)
+- [ ] vercel.json is updated (✅ Already done!)
+- [ ] Redeploy with fresh build cache
+
+---
+
+## 🎯 Expected Result
+
+After following these steps:
+
+✅ Homepage loads successfully  
+✅ Can sign up with OTP  
+✅ Email verification works  
+✅ Can login  
+✅ Can create and manage tasks  
+✅ All API routes work  
+✅ No 404 errors in logs  
+
+---
+
+## 📞 Quick Links
+
+- **Vercel Dashboard:** <https://vercel.com/dashboard>
+- **Your Project Settings:** <https://vercel.com/[your-username]/task-tracker/settings>
+- **Neon Console:** <https://console.neon.tech>
+- **MongoDB Atlas:** <https://cloud.mongodb.com>
+
+---
+
+**Next Steps:**
+
+1. Open Vercel Dashboard
+2. Configure build settings (Framework: Other, Build Command, Output Directory)
+3. Add 5 environment variables
+4. Redeploy with fresh build
+5. Test your app!
 
 ---
 
 **Created:** February 1, 2026  
-**Status:** ✅ Fix Deployed - Waiting for Redeployment
+**Status:** Ready to configure in Vercel Dashboard 🚀
