@@ -141,9 +141,14 @@ const path = require('path');
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../client/dist')));
 
-    // Handle React routing - return all requests to React app
-    app.get('/*', (req, res) => {
-        res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+    // SPA fallback - handle client-side routing with middleware
+    app.use((req, res, next) => {
+        // If no route matched and it's not an API route, serve index.html
+        if (!req.path.startsWith('/api')) {
+            res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+        } else {
+            next();
+        }
     });
 }
 
