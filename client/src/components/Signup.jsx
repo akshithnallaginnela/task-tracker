@@ -11,7 +11,7 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
   const [loading, setLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
 
-  // Step 1: Send OTP
+  // Direct signup without OTP (temporary - OTP can be enabled later)
   const handleSendOTP = async (e) => {
     e.preventDefault();
     setError('');
@@ -23,25 +23,17 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
         throw new Error('Password must be at least 6 characters');
       }
 
-      // Send OTP
-      await otpAPI.send(formData.email, 'signup');
+      // Direct signup without OTP
+      const signupRes = await authAPI.signup(formData);
+      const { token, user } = signupRes.data;
 
-      setStep(2);
-      setResendTimer(60); // 60 second cooldown
+      localStorage.setItem('token', token);
+      localStorage.setItem('currentUser', JSON.stringify(user));
 
-      // Countdown timer
-      const interval = setInterval(() => {
-        setResendTimer((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      onSignup(user);
 
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to send OTP');
+      setError(err.response?.data?.message || err.message || 'Signup failed');
     } finally {
       setLoading(false);
     }
@@ -186,7 +178,7 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
                   disabled={loading}
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Sending OTP...' : 'Send Verification Code'}
+                  {loading ? 'Creating Account...' : 'Create Account'}
                 </button>
               </form>
             </>
