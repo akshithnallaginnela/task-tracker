@@ -1,11 +1,8 @@
 // OTP Service for Email Verification and Password Reset
 const nodemailer = require('nodemailer');
 const path = require('path');
+const OTP = require('../models/OTP'); // Import MongoDB OTP Model
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
-
-// Store OTPs in memory with expiration (5 minutes)
-// Format: { email: { otp: '123456', expires: timestamp, purpose: 'signup'|'reset' } }
-const otpStore = new Map();
 
 // Create transporter with explicit Gmail SMTP settings
 const transporter = nodemailer.createTransport({
@@ -33,13 +30,14 @@ const generateOTP = () => {
 const sendOTP = async (email, purpose = 'signup') => {
   try {
     const otp = generateOTP();
-    const expires = Date.now() + 5 * 60 * 1000; // 5 minutes
 
-    // Store OTP
-    otpStore.set(email, { otp, expires, purpose });
-
-    // Clean up expired OTPs
-    cleanupExpiredOTPs();
+    // Save to Database (Upsert: Update if exists, Insert if not)
+    await OTP.findOneAndUpdate(
+      { email, purpose },
+      { otp, createdAt: new Date() }, // Update OTP and reset expiration timer
+      { upsert: true, new: true }
+    );
+    console.log(`✅ OTP stored in DB for ${email}`);
 
     // Email content based on purpose
     const templates = {
@@ -133,45 +131,28 @@ const sendOTP = async (email, purpose = 'signup') => {
 };
 
 // Verify OTP
-const verifyOTP = (email, otp, purpose = 'signup') => {
-  const stored = otpStore.get(email);
+const verifyOTP = async (email, otp, purpose = 'signup') => {
+  try {
+    const storedOTP = await OTP.findOne({ email, purpose });
 
-  if (!stored) {
-    return { success: false, message: 'No OTP found for this email' };
-  }
-
-  if (stored.purpose !== purpose) {
-    return { success: false, message: 'Invalid OTP purpose' };
-  }
-
-  if (Date.now() > stored.expires) {
-    otpStore.delete(email);
-    return { success: false, message: 'OTP has expired' };
-  }
-
-  if (stored.otp !== otp) {
-    return { success: false, message: 'Invalid OTP' };
-  }
-
-  // OTP is valid, remove it
-  otpStore.delete(email);
-  console.log(`✅ OTP verified for ${email}`);
-
-  return { success: true, message: 'OTP verified successfully' };
-};
-
-// Clean up expired OTPs
-const cleanupExpiredOTPs = () => {
-  const now = Date.now();
-  for (const [email, data] of otpStore.entries()) {
-    if (now > data.expires) {
-      otpStore.delete(email);
+    if (!storedOTP) {
+      return { success: false, message: 'No OTP found for this email (or expired)' };
     }
+
+    if (storedOTP.otp !== otp) {
+      return { success: false, message: 'Invalid OTP' };
+    }
+
+    // OTP is valid, remove it
+    await OTP.deleteOne({ _id: storedOTP._id });
+    console.log(`✅ OTP verified and deleted for ${email}`);
+
+    return { success: true, message: 'OTP verified successfully' };
+  } catch (error) {
+    console.error('❌ Error verifying OTP:', error);
+    return { success: false, message: 'Database error verifying OTP' };
   }
 };
-
-// Periodic cleanup (every 10 minutes)
-setInterval(cleanupExpiredOTPs, 10 * 60 * 1000);
 
 module.exports = {
   sendOTP,
