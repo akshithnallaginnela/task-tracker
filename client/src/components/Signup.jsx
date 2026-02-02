@@ -11,7 +11,7 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
   const [loading, setLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
 
-  // Direct signup without OTP (temporary - OTP can be enabled later)
+  // Step 1: Send OTP
   const handleSendOTP = async (e) => {
     e.preventDefault();
     setError('');
@@ -23,17 +23,26 @@ const Signup = ({ onSignup, onSwitchToLogin }) => {
         throw new Error('Password must be at least 6 characters');
       }
 
-      // Direct signup without OTP
-      const signupRes = await authAPI.signup(formData);
-      const { token, user } = signupRes.data;
+      // Send OTP
+      await otpAPI.send(formData.email, 'signup');
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('currentUser', JSON.stringify(user));
+      // Move to Step 2
+      setStep(2);
 
-      onSignup(user);
+      // Start resend timer
+      setResendTimer(60);
+      const interval = setInterval(() => {
+        setResendTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
 
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Signup failed');
+      setError(err.response?.data?.message || err.message || 'Failed to send OTP');
     } finally {
       setLoading(false);
     }
