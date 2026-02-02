@@ -4,13 +4,13 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const Task = require('./models/Task');
-const sequelize = require('./config/database');
-const authRoutes = require('./routes/auth');
-const otpRoutes = require('./routes/otp');
-const authMiddleware = require('./middleware/auth');
-const { initializeScheduler } = require('./services/schedulerService');
-const { sendTaskNotification } = require('./services/emailService');
+const Task = require('./_lib/models/Task');
+const sequelize = require('./_lib/config/database');
+const authRoutes = require('./_lib/routes/auth');
+const otpRoutes = require('./_lib/routes/otp');
+const authMiddleware = require('./_lib/middleware/auth');
+const { initializeScheduler } = require('./_lib/services/schedulerService');
+const { sendTaskNotification } = require('./_lib/services/emailService');
 
 const app = express();
 
@@ -83,7 +83,7 @@ app.post('/api/tasks', authMiddleware, async (req, res) => {
         // Send email notification if enabled
         try {
             // Get user email from JWT or userService
-            const userEmail = req.user.email || await require('./services/userService').getUserEmail(req.user.userId);
+            const userEmail = req.user.email || await require('./_lib/services/userService').getUserEmail(req.user.userId);
 
             if (userEmail) {
                 await sendTaskNotification(userEmail, newTask, 'created');

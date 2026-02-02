@@ -1,0 +1,13 @@
+# Ignore these folders/files from being treated as serverless functions
+api/node_modules
+api/config
+api/middleware
+api/models
+api/routes
+api/services
+api/testEmail.js
+api/setup-db.js
+api/clearData.js
+api/clearEverything.js
+api/.env
+api/.env.example
