@@ -131,7 +131,7 @@ const sendOTP = async (email, purpose = 'signup') => {
 };
 
 // Verify OTP
-const verifyOTP = async (email, otp, purpose = 'signup') => {
+const verifyOTP = async (email, otp, purpose = 'signup', deleteOtp = true) => {
   try {
     const storedOTP = await OTP.findOne({ email, purpose });
 
@@ -143,9 +143,13 @@ const verifyOTP = async (email, otp, purpose = 'signup') => {
       return { success: false, message: 'Invalid OTP' };
     }
 
-    // OTP is valid, remove it
-    await OTP.deleteOne({ _id: storedOTP._id });
-    console.log(`✅ OTP verified and deleted for ${email}`);
+    if (deleteOtp) {
+      // OTP is valid, remove it
+      await OTP.deleteOne({ _id: storedOTP._id });
+      console.log(`✅ OTP verified and deleted for ${email}`);
+    } else {
+      console.log(`✅ OTP verified for ${email} (kept for next step)`);
+    }
 
     return { success: true, message: 'OTP verified successfully' };
   } catch (error) {

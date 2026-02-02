@@ -75,7 +75,7 @@ router.post('/verify', async (req, res) => {
             return res.status(400).json({ message: 'Email and OTP are required' });
         }
 
-        const result = await verifyOTP(email, otp, purpose);
+        const result = await verifyOTP(email, otp, purpose, false); // Don't delete yet
 
         if (result.success) {
             return res.status(200).json({
