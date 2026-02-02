@@ -2,9 +2,11 @@
 require('dotenv').config();
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
 const User = require('../models/User'); // Import User model
-
-// ...
+const { sendOTP, verifyOTP } = require('../services/otpService');
+const { syncLocalUser, localUsers } = require('../services/userService');
+const { sendTaskNotification } = require('../services/emailService');
 
 // @route   POST /api/otp/send
 // @desc    Send OTP to email
@@ -111,24 +113,33 @@ router.post('/reset-password', async (req, res) => {
             return res.status(400).json({ message: otpResult.message });
         }
 
-        // Find user
-        const userEntry = Array.from(localUsers.entries()).find(([id, user]) => user.email === email);
-        if (!userEntry) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        const [userId, user] = userEntry;
-
         // Hash new password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-        // Update password
-        user.password = hashedPassword;
-        localUsers.set(userId, user);
-        syncLocalUser(userId, user);
+        // Update Password in Database
+        if (User) {
+            const user = await User.findOne({ where: { email } });
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
 
-        console.log(`✅ Password reset for ${email}`);
+            user.password = hashedPassword;
+            await user.save();
+            console.log(`✅ Password reset for ${email} (DB)`);
+        } else {
+            // Local fallback
+            const userEntry = Array.from(localUsers.entries()).find(([id, user]) => user.email === email);
+            if (!userEntry) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            const [userId, user] = userEntry;
+            user.password = hashedPassword;
+            localUsers.set(userId, user);
+            syncLocalUser(userId, user);
+            console.log(`✅ Password reset for ${email} (Local)`);
+        }
 
         return res.status(200).json({
             message: 'Password reset successfully',
@@ -136,7 +147,7 @@ router.post('/reset-password', async (req, res) => {
         });
     } catch (error) {
         console.error('Error resetting password:', error);
-        return res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
