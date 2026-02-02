@@ -1,9 +1,10 @@
 const { Sequelize } = require('sequelize');
+const pg = require('pg');
 require('dotenv').config();
 
 // Check if PostgreSQL is configured
 const isPostgresConfigured = !!(
-  process.env.DATABASE_URL || 
+  process.env.DATABASE_URL ||
   (process.env.PG_PASSWORD && process.env.PG_DATABASE)
 );
 
@@ -13,40 +14,41 @@ let sequelize = null;
 if (isPostgresConfigured) {
   // PostgreSQL connection for user authentication
   // Supports both connection string (Vercel/Neon) and individual parameters (local)
-  sequelize = process.env.DATABASE_URL 
+  sequelize = process.env.DATABASE_URL
     ? new Sequelize(process.env.DATABASE_URL, {
+      dialect: 'postgres',
+      dialectModule: pg,
+      logging: false,
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false // For Neon/Vercel Postgres
+        }
+      },
+      pool: {
+        max: 3, // Reduced for serverless
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+      }
+    })
+    : new Sequelize(
+      process.env.PG_DATABASE || 'tasktracker_users',
+      process.env.PG_USER || 'postgres',
+      process.env.PG_PASSWORD,
+      {
+        host: process.env.PG_HOST || 'localhost',
+        port: process.env.PG_PORT || 5432,
         dialect: 'postgres',
         logging: false,
-        dialectOptions: {
-          ssl: {
-            require: true,
-            rejectUnauthorized: false // For Neon/Vercel Postgres
-          }
-        },
         pool: {
-          max: 3, // Reduced for serverless
+          max: 5,
           min: 0,
           acquire: 30000,
           idle: 10000
         }
-      })
-    : new Sequelize(
-        process.env.PG_DATABASE || 'tasktracker_users',
-        process.env.PG_USER || 'postgres',
-        process.env.PG_PASSWORD,
-        {
-          host: process.env.PG_HOST || 'localhost',
-          port: process.env.PG_PORT || 5432,
-          dialect: 'postgres',
-          logging: false,
-          pool: {
-            max: 5,
-            min: 0,
-            acquire: 30000,
-            idle: 10000
-          }
-        }
-      );
+      }
+    );
 }
 
 // Test connection only if PostgreSQL is configured

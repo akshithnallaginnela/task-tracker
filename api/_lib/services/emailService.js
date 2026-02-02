@@ -5,14 +5,14 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 // Debug: Log to verify credentials are loaded
 console.log('📧 Email credentials check:');
 console.log('   USER:', process.env.EMAIL_USER ? '✅ Loaded' : '❌ Missing');
-console.log('   PASS:', process.env.EMAIL_PASSWORD ? '✅ Loaded' : '❌ Missing');
+console.log('   PASS:', process.env.EMAIL_PASS ? '✅ Loaded' : '❌ Missing');
 
 // Email configuration - Simplified for Gmail
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
+    pass: process.env.EMAIL_PASS
   },
   tls: {
     rejectUnauthorized: false
