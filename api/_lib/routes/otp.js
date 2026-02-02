@@ -13,142 +13,92 @@ const { sendTaskNotification } = require('../services/emailService');
 // @access  Public
 router.post('/send', async (req, res) => {
     try {
-        const { email, purpose } = req.body; // purpose: 'signup' or 'reset'
+        let { email, purpose } = req.body; // purpose: 'signup' or 'reset'
+        if (email) email = email.toLowerCase(); // Normalize email
 
         if (!email) {
             return res.status(400).json({ message: 'Email is required' });
         }
-
-        if (!purpose || !['signup', 'reset'].includes(purpose)) {
-            return res.status(400).json({ message: 'Invalid purpose' });
-        }
-
-        // Check against Database (PostgreSQL) if available
-        let userExists = null;
-        if (User) {
-            userExists = await User.findOne({ where: { email } });
-        } else {
-            // Fallback to local memory (only for dev/testing without DB)
-            userExists = Array.from(localUsers.values()).find(u => u.email === email);
-        }
-
-        // For password reset, check if user exists
-        if (purpose === 'reset') {
-            if (!userExists) {
-                return res.status(404).json({ message: 'No account found with this email' });
-            }
-        }
-
-        // For signup, check if user already exists
-        if (purpose === 'signup') {
-            if (userExists) {
-                return res.status(400).json({ message: 'Email already registered' });
-            }
-        }
-
+        // ... (keep existing logic) ...
         const result = await sendOTP(email, purpose);
 
-        if (result.success) {
-            return res.status(200).json({
-                message: 'OTP sent successfully. Please check your email.',
-                email
-            });
-        } else {
-            return res.status(500).json({ message: result.message });
-        }
-    } catch (error) {
-        console.error('Error sending OTP:', error);
-        return res.status(500).json({ message: 'Server error' });
-    }
-});
+        // ... (keep existing logic) ...
 
-// @route   POST /api/otp/verify
-// @desc    Verify OTP
-// @access  Public
-router.post('/verify', async (req, res) => {
-    try {
-        const { email, otp, purpose } = req.body;
+        // @route   POST /api/otp/verify
+        // @desc    Verify OTP
+        // @access  Public
+        router.post('/verify', async (req, res) => {
+            try {
+                let { email, otp, purpose } = req.body;
+                if (email) email = email.toLowerCase(); // Normalize email
 
-        if (!email || !otp) {
-            return res.status(400).json({ message: 'Email and OTP are required' });
-        }
+                if (!email || !otp) {
+                    return res.status(400).json({ message: 'Email and OTP are required' });
+                }
 
-        const result = verifyOTP(email, otp, purpose);
+                const result = await verifyOTP(email, otp, purpose); // Added await
 
-        if (result.success) {
-            return res.status(200).json({
-                message: 'OTP verified successfully',
-                verified: true
-            });
-        } else {
-            return res.status(400).json({
-                message: result.message,
-                verified: false
-            });
-        }
-    } catch (error) {
-        console.error('Error verifying OTP:', error);
-        return res.status(500).json({ message: 'Server error' });
-    }
-});
+                // ... (keep existing logic) ...
 
-// @route   POST /api/otp/reset-password
-// @desc    Reset password after OTP verification
-// @access  Public
-router.post('/reset-password', async (req, res) => {
-    try {
-        const { email, otp, newPassword } = req.body;
+                // @route   POST /api/otp/reset-password
+                // @desc    Reset password after OTP verification
+                // @access  Public
+                router.post('/reset-password', async (req, res) => {
+                    try {
+                        let { email, otp, newPassword } = req.body;
+                        if (email) email = email.toLowerCase(); // Normalize email
 
-        if (!email || !otp || !newPassword) {
-            return res.status(400).json({ message: 'Email, OTP, and new password are required' });
-        }
+                        if (!email || !otp || !newPassword) {
+                            return res.status(400).json({ message: 'Email, OTP, and new password are required' });
+                        }
 
-        if (newPassword.length < 6) {
-            return res.status(400).json({ message: 'Password must be at least 6 characters' });
-        }
+                        if (newPassword.length < 6) {
+                            return res.status(400).json({ message: 'Password must be at least 6 characters' });
+                        }
 
-        // Verify OTP
-        const otpResult = verifyOTP(email, otp, 'reset');
-        if (!otpResult.success) {
-            return res.status(400).json({ message: otpResult.message });
-        }
+                        // Verify OTP
+                        const otpResult = await verifyOTP(email, otp, 'reset'); // Added await
+                        if (!otpResult.success) {
+                            return res.status(400).json({ message: otpResult.message });
+                        }
 
-        // Hash new password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-        // Update Password in Database
-        if (User) {
-            const user = await User.findOne({ where: { email } });
-            if (!user) {
-                return res.status(404).json({ message: 'User not found' });
-            }
+                        // Hash new password
+                        const salt = await bcrypt.genSalt(10);
+                        const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-            user.password = hashedPassword;
-            await user.save();
-            console.log(`✅ Password reset for ${email} (DB)`);
-        } else {
-            // Local fallback
-            const userEntry = Array.from(localUsers.entries()).find(([id, user]) => user.email === email);
-            if (!userEntry) {
-                return res.status(404).json({ message: 'User not found' });
-            }
+                        // Update Password in Database
+                        if (User) {
+                            const user = await User.findOne({ where: { email } });
+                            if (!user) {
+                                return res.status(404).json({ message: 'User not found' });
+                            }
 
-            const [userId, user] = userEntry;
-            user.password = hashedPassword;
-            localUsers.set(userId, user);
-            syncLocalUser(userId, user);
-            console.log(`✅ Password reset for ${email} (Local)`);
-        }
+                            user.password = hashedPassword;
+                            await user.save();
+                            console.log(`✅ Password reset for ${email} (DB)`);
+                        } else {
+                            // Local fallback
+                            const userEntry = Array.from(localUsers.entries()).find(([id, user]) => user.email === email);
+                            if (!userEntry) {
+                                return res.status(404).json({ message: 'User not found' });
+                            }
 
-        return res.status(200).json({
-            message: 'Password reset successfully',
-            success: true
-        });
-    } catch (error) {
-        console.error('Error resetting password:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
+                            const [userId, user] = userEntry;
+                            user.password = hashedPassword;
+                            localUsers.set(userId, user);
+                            syncLocalUser(userId, user);
+                            console.log(`✅ Password reset for ${email} (Local)`);
+                        }
 
-module.exports = router;
+                        return res.status(200).json({
+                            message: 'Password reset successfully',
+                            success: true
+                        });
+                    } catch (error) {
+                        console.error('Error resetting password:', error);
+                        res.status(500).json({ message: 'Server error' });
+                    }
+                });
+
+                module.exports = router;
