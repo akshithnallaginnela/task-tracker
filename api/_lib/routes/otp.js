@@ -2,10 +2,9 @@
 require('dotenv').config();
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const { sendOTP, verifyOTP } = require('../services/otpService');
-const { syncLocalUser, localUsers } = require('../services/userService');
-const { sendTaskNotification } = require('../services/emailService');
+const User = require('../models/User'); // Import User model
+
+// ...
 
 // @route   POST /api/otp/send
 // @desc    Send OTP to email
@@ -22,9 +21,17 @@ router.post('/send', async (req, res) => {
             return res.status(400).json({ message: 'Invalid purpose' });
         }
 
+        // Check against Database (PostgreSQL) if available
+        let userExists = null;
+        if (User) {
+            userExists = await User.findOne({ where: { email } });
+        } else {
+            // Fallback to local memory (only for dev/testing without DB)
+            userExists = Array.from(localUsers.values()).find(u => u.email === email);
+        }
+
         // For password reset, check if user exists
         if (purpose === 'reset') {
-            const userExists = Array.from(localUsers.values()).find(u => u.email === email);
             if (!userExists) {
                 return res.status(404).json({ message: 'No account found with this email' });
             }
@@ -32,7 +39,6 @@ router.post('/send', async (req, res) => {
 
         // For signup, check if user already exists
         if (purpose === 'signup') {
-            const userExists = Array.from(localUsers.values()).find(u => u.email === email);
             if (userExists) {
                 return res.status(400).json({ message: 'Email already registered' });
             }
